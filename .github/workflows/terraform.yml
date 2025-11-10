@@ -42,8 +42,6 @@ jobs:
 
       - name: Show CI_CD_API_TF_TOKEN presence
         run: echo "CI_CD_API_TF_TOKEN is set"
-    env:
-        CI_CD_API_TF_TOKEN: ${{ secrets.CI_CD_API_TF_TOKEN }}
 
       - name: Terraform Init
         run: terraform init
