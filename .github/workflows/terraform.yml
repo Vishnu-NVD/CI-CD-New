@@ -26,6 +26,7 @@ jobs:
       GENESYSCLOUD_OAUTHCLIENT_ID: ${{ secrets.GENESYSCLOUD_OAUTHCLIENT_ID }}
       GENESYSCLOUD_OAUTHCLIENT_SECRET: ${{ secrets.GENESYSCLOUD_OAUTHCLIENT_SECRET }}
       GENESYSCLOUD_REGION: ${{ secrets.GENESYSCLOUD_REGION }}
+      CI_CD_API_TF_TOKEN: ${{ secrets.CI_CD_API_TF_TOKEN }}
 
     steps:
       - name: Checkout repository
