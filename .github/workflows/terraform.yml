@@ -37,6 +37,11 @@ jobs:
         with:
           terraform_version: 1.13.4
 
+          
+- name: Check Terraform Version
+  run: terraform version
+
+
       - name: Terraform Init
         run: terraform init
 
