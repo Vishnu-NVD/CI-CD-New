@@ -6,17 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       destroy:
-        description: 'Set to true to destroy resources'
+        description: 'Set to true to destroy all resources'
         required: false
         default: 'false'
-      confirm_destroy:
-        description: 'Type CONFIRM to proceed with destroy'
-        required: false
-        default: ''
-      target_resource:
-        description: 'Optional: Terraform resource to destroy (e.g., genesyscloud_routing_queue.my_queue)'
-        required: false
-        default: ''
 
 jobs:
   terraform:
@@ -49,10 +41,6 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event.inputs.destroy != 'true'
         run: terraform apply -auto-approve
 
-      - name: Terraform Destroy Specific Resource
-        if: github.event.inputs.destroy == 'true' && github.event.inputs.confirm_destroy == 'CONFIRM' && github.event.inputs.target_resource != ''
-        run: terraform destroy -target=${{ github.event.inputs.target_resource }} -auto-approve
-
-      - name: Terraform Destroy All Resources
-        if: github.event.inputs.destroy == 'true' && github.event.inputs.confirm_destroy == 'CONFIRM' && github.event.inputs.target_resource == ''
+      - name: Terraform Destroy
+        if: github.event.inputs.destroy == 'true'
         run: terraform destroy -auto-approve
