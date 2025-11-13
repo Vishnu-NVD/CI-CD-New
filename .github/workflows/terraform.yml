@@ -42,13 +42,12 @@ jobs:
 
       - name: Check TF_API_TOKEN presence
         run: |
-        if [ -z "$TF_API_TOKEN" ]; then
-        echo "❌ TF_API_TOKEN is NOT set"
-        exit 1
-        else
-        echo "✅ TF_API_TOKEN is set"
-        fi
-
+          if [ -z "$TF_API_TOKEN" ]; then
+            echo "❌ TF_API_TOKEN is NOT set"
+            exit 1
+          else
+            echo "✅ TF_API_TOKEN is set"
+          fi
 
       - name: Terraform Init
         run: terraform init
