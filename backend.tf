@@ -1,11 +1,6 @@
 
-terraform { 
-  cloud { 
-    
-    organization = "Cx_As_Code" 
-
-    workspaces { 
-      name = "CI_CD" 
-    } 
-  } 
+terraform {
+  backend "local" {
+    path = "terraform.tfstate"
+  }
 }
