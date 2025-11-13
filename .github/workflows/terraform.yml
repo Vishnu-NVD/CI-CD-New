@@ -28,6 +28,10 @@ jobs:
       GENESYSCLOUD_REGION: ${{ secrets.GENESYSCLOUD_REGION }}
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
 
+    defaults:
+      run:
+        working-directory: .   
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,6 +53,13 @@ jobs:
             echo "✅ TF_API_TOKEN is set"
           fi
 
+      - name: Download previous Terraform state
+        uses: actions/download-artifact@v3
+        with:
+          name: terraform-state
+          path: .
+        continue-on-error: true
+
       - name: Terraform Init
         run: terraform init
 
@@ -69,3 +80,9 @@ jobs:
       - name: Terraform Destroy All Resources
         if: github.event.inputs.destroy == 'true' && github.event.inputs.confirm_destroy == 'CONFIRM' && github.event.inputs.target_resource == ''
         run: terraform destroy -auto-approve
+
+      - name: Upload Terraform state
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-state
+          path: terraform.tfstate
