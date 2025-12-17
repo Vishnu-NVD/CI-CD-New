@@ -1,3 +1,4 @@
+
 name: "Genesys CX as Code Deployment"
 
 on:
@@ -6,6 +7,8 @@ on:
       - main_skill
     paths:
       - 'Terraform/**'
+  # You can keep workflow_dispatch if you still want manual runs later,
+  # but it's not required for destroy anymore.
   workflow_dispatch:
     inputs:
       destroy:
@@ -44,19 +47,25 @@ jobs:
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform validate
 
-      - name: Terraform Plan
+      # ---------- PLAN/APPLY (default on main_skill) ----------
+      - name: Terraform Plan (Apply)
+        if: startsWith(github.ref, 'refs/heads/main_skill') && !contains(github.event.head_commit.message, '[destroy]')
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform plan -no-color -out=tfplan
 
       - name: Terraform Apply
-        if: >
-          github.ref == 'refs/heads/main_skill'
-          && github.event.inputs.destroy != 'true'
-          && always()
+        if: startsWith(github.ref, 'refs/heads/main_skill') && !contains(github.event.head_commit.message, '[destroy]')
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform apply -auto-approve tfplan
 
-      - name: Terraform Destroy
-        if: github.event.inputs.destroy == 'true'
+      # ---------- PLAN/DESTROY (opt-in via commit message flag) ----------
+      - name: Terraform Plan (Destroy)
+        if: startsWith(github.ref, 'refs/heads/main_skill') && contains(github.event.head_commit.message, '[destroy]')
         working-directory: ./Terraform/${{ matrix.module }}
-        run: terraform destroy -auto-approve
+        run: terraform plan -destroy -no-color -out=tfplan-destroy
+
+      - name: Terraform Destroy (Apply the destroy plan)
+        if: startsWith(github.ref, 'refs/heads/main_skill') && contains(github.event.head_commit.message, '[destroy]')
+        working-directory: ./Terraform/${{ matrix.module }}
+        run: terraform apply -auto-approve tfplan-destroy
+       
