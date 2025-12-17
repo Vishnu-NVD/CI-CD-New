@@ -4,7 +4,7 @@ cloud {
     organization = "Knowledge_TF" 
 
     workspaces { 
-      name = "Knowledge" 
+      name = "Skill" 
     } 
   } 
   required_providers {
