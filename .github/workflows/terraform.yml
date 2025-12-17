@@ -2,35 +2,29 @@ name: "Genesys CX as Code Deployment"
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main_skill
+    paths:
+      - 'Terraform/**'
   workflow_dispatch:
     inputs:
       destroy:
-        description: 'Set to true to destroy resources'
+        description: 'Set to true to destroy all resources'
         required: false
         default: 'false'
-      confirm_destroy:
-        description: 'Type CONFIRM to proceed with destroy'
-        required: false
-        default: ''
-      target_resource:
-        description: 'Optional: Terraform resource to destroy (e.g., genesyscloud_routing_queue.my_queue)'
-        required: false
-        default: ''
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        module: [Skill]   # Add more modules here
+
     env:
       GENESYSCLOUD_OAUTHCLIENT_ID: ${{ secrets.GENESYSCLOUD_OAUTHCLIENT_ID }}
       GENESYSCLOUD_OAUTHCLIENT_SECRET: ${{ secrets.GENESYSCLOUD_OAUTHCLIENT_SECRET }}
       GENESYSCLOUD_REGION: ${{ secrets.GENESYSCLOUD_REGION }}
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-
-    defaults:
-      run:
-        working-directory: .   
 
     steps:
       - name: Checkout repository
@@ -40,49 +34,29 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.4
-
-      - name: Check Terraform Version
-        run: terraform version
-
-      - name: Check TF_API_TOKEN presence
-        run: |
-          if [ -z "$TF_API_TOKEN" ]; then
-            echo "❌ TF_API_TOKEN is NOT set"
-            exit 1
-          else
-            echo "✅ TF_API_TOKEN is set"
-          fi
-
-      - name: Download previous Terraform state
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-state
-          path: .
-        continue-on-error: true
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Terraform Init
+        working-directory: ./Terraform/${{ matrix.module }}
         run: terraform init
 
       - name: Terraform Validate
+        working-directory: ./Terraform/${{ matrix.module }}
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -no-color
+        working-directory: ./Terraform/${{ matrix.module }}
+        run: terraform plan -no-color -out=tfplan
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event.inputs.destroy != 'true'
-        run: terraform apply -auto-approve
+        if: >
+          github.ref == 'refs/heads/main_skill'
+          && github.event.inputs.destroy != 'true'
+          && always()
+        working-directory: ./Terraform/${{ matrix.module }}
+        run: terraform apply -auto-approve tfplan
 
-      - name: Terraform Destroy Specific Resource
-        if: github.event.inputs.destroy == 'true' && github.event.inputs.confirm_destroy == 'CONFIRM' && github.event.inputs.target_resource != ''
-        run: terraform destroy -target=${{ github.event.inputs.target_resource }} -auto-approve
-
-      - name: Terraform Destroy All Resources
-        if: github.event.inputs.destroy == 'true' && github.event.inputs.confirm_destroy == 'CONFIRM' && github.event.inputs.target_resource == ''
+      - name: Terraform Destroy
+        if: github.event.inputs.destroy == 'true'
+        working-directory: ./Terraform/${{ matrix.module }}
         run: terraform destroy -auto-approve
-
-      - name: Upload Terraform state
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-state
-          path: terraform.tfstate
