@@ -7,14 +7,7 @@ on:
       - main_kb
     paths:
       - 'Terraform/**'
-  # You can keep workflow_dispatch if you still want manual runs later,
-  # but it's not required for destroy anymore.
-  workflow_dispatch:
-    inputs:
-      destroy:
-        description: 'Set to true to destroy all resources'
-        required: false
-        default: 'false'
+  
 
 jobs:
   terraform:
