@@ -1,14 +1,11 @@
-
 name: "Genesys CX as Code Deployment"
 
 on:
   push:
     branches:
-      - main_skill
+      - main_kb
     paths:
       - 'Terraform/**'
-  # You can keep workflow_dispatch if you still want manual runs later,
-  # but it's not required for destroy anymore.
   workflow_dispatch:
     inputs:
       destroy:
@@ -23,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        module: [Skill]   # Add more modules here
+        module: [Knowledge]   # Add more modules here
 
     env:
       GENESYSCLOUD_OAUTHCLIENT_ID: ${{ secrets.GENESYSCLOUD_OAUTHCLIENT_ID }}
@@ -48,21 +45,27 @@ jobs:
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform validate
 
-      # ---------- PLAN/APPLY (default on main_skill) ----------
+      # ---------- PLAN/APPLY (default on main_kb push) ----------
       - name: Terraform Plan (Apply)
-        if: startsWith(github.ref, 'refs/heads/main_skill') && !contains(github.event.head_commit.message, '[destroy]')
+        if: >
+          startsWith(github.ref, 'refs/heads/main_kb') &&
+          !contains(github.event.head_commit.message, '[destroy]') &&
+          github.event.inputs.destroy != 'true'
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform plan -no-color -out=tfplan
 
       - name: Terraform Apply
-        if: startsWith(github.ref, 'refs/heads/main_skill') && !contains(github.event.head_commit.message, '[destroy]')
+        if: >
+          startsWith(github.ref, 'refs/heads/main_kb') &&
+          !contains(github.event.head_commit.message, '[destroy]') &&
+          github.event.inputs.destroy != 'true'
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform apply -auto-approve tfplan
 
-      # ---------- PLAN/DESTROY (opt-in via commit message flag) ----------
+      # ---------- PLAN/DESTROY (commit flag OR manual dispatch) ----------
       - name: Terraform Plan (Destroy)
         if: >
-          startsWith(github.ref, 'refs/heads/main_skill') &&
+          startsWith(github.ref, 'refs/heads/main_kb') &&
           (contains(github.event.head_commit.message, '[destroy]') ||
            github.event.inputs.destroy == 'true')
         working-directory: ./Terraform/${{ matrix.module }}
@@ -70,9 +73,8 @@ jobs:
 
       - name: Terraform Destroy (Apply destroy plan)
         if: >
-          startsWith(github.ref, 'refs/heads/main_skill') &&
+          startsWith(github.ref, 'refs/heads/main_kb') &&
           (contains(github.event.head_commit.message, '[destroy]') ||
            github.event.inputs.destroy == 'true')
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform apply -auto-approve tfplan-destroy
-       
