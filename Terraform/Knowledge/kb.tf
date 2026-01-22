@@ -4,4 +4,3 @@ resource "genesyscloud_knowledge_knowledgebase" "example_knowledgebase" {
   core_language = "en-US"
 }
 
-
