@@ -15,6 +15,7 @@ on:
         description: 'Set to true to destroy all resources'
         required: false
         default: 'false'
+        type: boolean
 
 jobs:
   terraform:
