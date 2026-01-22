@@ -62,7 +62,7 @@ jobs:
       # ---------- PLAN/DESTROY (opt-in via commit message flag) ----------
       - name: Terraform Plan (Destroy)
         if: >
-          startsWith(github.ref, 'refs/heads/main_kb') &&
+          startsWith(github.ref, 'refs/heads/main_skill') &&
           (contains(github.event.head_commit.message, '[destroy]') ||
            github.event.inputs.destroy == 'true')
         working-directory: ./Terraform/${{ matrix.module }}
@@ -70,7 +70,7 @@ jobs:
 
       - name: Terraform Destroy (Apply destroy plan)
         if: >
-          startsWith(github.ref, 'refs/heads/main_kb') &&
+          startsWith(github.ref, 'refs/heads/main_skill') &&
           (contains(github.event.head_commit.message, '[destroy]') ||
            github.event.inputs.destroy == 'true')
         working-directory: ./Terraform/${{ matrix.module }}
