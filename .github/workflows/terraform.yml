@@ -60,12 +60,18 @@ jobs:
 
       # ---------- PLAN/DESTROY (opt-in via commit message flag) ----------
       - name: Terraform Plan (Destroy)
-        if: startsWith(github.ref, 'refs/heads/main_skill') && contains(github.event.head_commit.message, '[destroy]')
+        if: >
+          startsWith(github.ref, 'refs/heads/main_kb') &&
+          (contains(github.event.head_commit.message, '[destroy]') ||
+           github.event.inputs.destroy == 'true')
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform plan -destroy -no-color -out=tfplan-destroy
 
-      - name: Terraform Destroy (Apply the destroy plan)
-        if: startsWith(github.ref, 'refs/heads/main_skill') && contains(github.event.head_commit.message, '[destroy]')
+      - name: Terraform Destroy (Apply destroy plan)
+        if: >
+          startsWith(github.ref, 'refs/heads/main_kb') &&
+          (contains(github.event.head_commit.message, '[destroy]') ||
+           github.event.inputs.destroy == 'true')
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform apply -auto-approve tfplan-destroy
        
