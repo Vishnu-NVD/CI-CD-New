@@ -1,5 +1,5 @@
 resource "genesyscloud_routing_queue" "Queue_1" {
-  name = "Example Queue_CICD_demo_v2"
+  name = "Example Queue_CICD_demo_v3"
   media_settings_callback {
     enable_auto_answer        = false
     mode                      = "AgentFirst"
@@ -32,5 +32,9 @@ resource "genesyscloud_routing_queue" "Queue_1" {
     service_level_percentage  = 0.8
     alerting_timeout_sec      = 300
     enable_auto_answer        = false
+  }
+members {
+    user_id  = "ef06fceb-e0f0-4558-84d2-7cb3acca9f2a"
+    ring_num = 2
   }
 }
