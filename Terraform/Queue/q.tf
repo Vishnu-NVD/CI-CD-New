@@ -35,6 +35,6 @@ resource "genesyscloud_routing_queue" "Queue_1" {
   }
 members {
     user_id  = "ef06fceb-e0f0-4558-84d2-7cb3acca9f2a"
-    ring_num = 2
+    ring_num = 1
   }
 }
