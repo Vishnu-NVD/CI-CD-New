@@ -4,7 +4,7 @@ name: "Genesys CX as Code Deployment"
 on:
   push:
     branches:
-      - main_kb
+      - main_queue
     paths:
       - 'Terraform/**'
   # You can keep workflow_dispatch if you still want manual runs later,
@@ -22,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        module: [Knowledge]   # Add more modules here
+        module: [Queue]   # Add more modules here
 
     env:
       GENESYSCLOUD_OAUTHCLIENT_ID: ${{ secrets.GENESYSCLOUD_OAUTHCLIENT_ID }}
@@ -49,23 +49,23 @@ jobs:
 
       # ---------- PLAN/APPLY (default on main_kb) ----------
       - name: Terraform Plan (Apply)
-        if: startsWith(github.ref, 'refs/heads/main_kb') && !contains(github.event.head_commit.message, '[destroy]')
+        if: startsWith(github.ref, 'refs/heads/main_queue') && !contains(github.event.head_commit.message, '[destroy]')
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform plan -no-color -out=tfplan
 
       - name: Terraform Apply
-        if: startsWith(github.ref, 'refs/heads/main_kb') && !contains(github.event.head_commit.message, '[destroy]')
+        if: startsWith(github.ref, 'refs/heads/main_queue') && !contains(github.event.head_commit.message, '[destroy]')
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform apply -auto-approve tfplan
 
       # ---------- PLAN/DESTROY (opt-in via commit message flag) ----------
       - name: Terraform Plan (Destroy)
-        if: startsWith(github.ref, 'refs/heads/main_kb') && contains(github.event.head_commit.message, '[destroy]')
+        if: startsWith(github.ref, 'refs/heads/main_queue') && contains(github.event.head_commit.message, '[destroy]')
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform plan -destroy -no-color -out=tfplan-destroy
 
       - name: Terraform Destroy (Apply the destroy plan)
-        if: startsWith(github.ref, 'refs/heads/main_kb') && contains(github.event.head_commit.message, '[destroy]')
+        if: startsWith(github.ref, 'refs/heads/main_queue') && contains(github.event.head_commit.message, '[destroy]')
         working-directory: ./Terraform/${{ matrix.module }}
         run: terraform apply -auto-approve tfplan-destroy
        
